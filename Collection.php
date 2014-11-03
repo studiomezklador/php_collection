@@ -268,13 +268,11 @@ class Collection implements ArrayAccess, IteratorAggregate
 }
 
 class objCollection {
+    
     protected $arr = [];
-    public $methods = []; public $attr;
 
     public function __construct($table = [])
     {
-        $this->methods = get_class_methods($this);
-        $this->attr = get_class_vars(get_class($this));
         if (!empty($table))
         {
             foreach ($table as $k => $v)
@@ -291,50 +289,51 @@ class objCollection {
 
     public function __get($name)
     {
-        return $this->arr[$name];
+        return $this->$$name;
     }
 
     public function __isset($name)
     {
-        return isset($this->arr[$name]);
+        return isset($this->$name);
     }
 
     public function __unset($name)
     {
-        if (isset($this->arr[$name])) unset($this->arr[$name]);
+        if (isset($this->$name)) unset($this->$name);
     }
 
     public function __call($methodname, $args)
     {
-        $input = preg_split('~[A-Z]~',$methodname);
-        $methodHere = (string) reset($input);
-        $methodKey = (string) end($input);
+        $input = preg_split('/(?=[A-Z])/',$methodname);
+        $methodHere = reset($input);
+        $methodKey = strtolower(end($input));
+
         if (method_exists($this, $methodHere))
-            return $this->$methodHere(strtolower($methodKey));
+            return $this->$methodHere($methodKey);
 
         return false;
     }
 
     public function has($key)
     {
-        return array_key_exists($key, $this->arr);
+        return property_exists($this, $key);
     }
 
     public function all()
     {
-        return $arr;
+        return get_object_vars($this);
     }
 
     public function getby($key)
     {
         if ($this->has($key))
-            return $this->arr[$key];
+            return $this->$key;
     }
 
     public function flush($key)
     {
         if ($this->has($key))
-            unset($this->arr[$key]);
+            unset($this->$key);
         return true;
     }
 }

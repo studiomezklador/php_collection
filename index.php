@@ -14,9 +14,10 @@ var_dump($garage->first("roger"));
 //var_dump($garage->listing("marque"));
 
 $test = new objCollection($park['roger']);
-var_dump($test);
-var_dump($test->methods);
-var_dump($test->attr);
+var_dump($test->all());
+var_dump($test->getbyMarque(), $test->getbyModele(), $test->getbyPuissance(), $test->hasCouleur());
+//var_dump($test->methods);
+var_dump(key($park));
 die();
 //$garage = new RecursiveIt($park);
 //
