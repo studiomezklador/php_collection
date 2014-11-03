@@ -10,7 +10,12 @@ $garage = new Collection($park);
 $models = $garage->get("modele");
 
 var_dump($models);
-var_dump($garage->has("marque"));
+var_dump($garage->first("roger"));
+//var_dump($garage->listing("marque"));
+
+$test = new objCollection();
+var_dump($test->methods);
+var_dump($test->attr);
 die();
 //$garage = new RecursiveIt($park);
 //

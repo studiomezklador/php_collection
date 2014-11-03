@@ -29,13 +29,13 @@ class Collection implements ArrayAccess, IteratorAggregate
      */
     public function get($key)
     {
-        if (is_array(reset($this->items))) // Multi arrays
+        if (is_array(reset($this->items))) // Multi arrays ?
         {
             if ($this->has($key)) // using internal method has()
                 return array_column($this->items, $key);
         }
 
-        if ($this->has($key)) // Single associative array [same usage of has()]
+        if ($this->has($key)) // Single associative array [same usage of has()] ?
         {
             return $this->items[$key];
         }
@@ -62,6 +62,20 @@ class Collection implements ArrayAccess, IteratorAggregate
         if (is_array($this->items))
             return $this->fetchAllKeys($this->items);
         return array_keys($this->items);
+    }
+
+    public function getKey()
+    {
+        if (is_array(reset($this->items)))
+        {
+            $res = [];
+            foreach ($this->items as $it_key => $it_val)
+            {
+                $res[] = key($it_key);
+            }
+            var_dump($res);
+            die();
+        }
     }
 
     /**
@@ -97,23 +111,7 @@ class Collection implements ArrayAccess, IteratorAggregate
         return array_key_exists($key, $lookup);
     }
 
-    public function listing($k, $v, $obj = false)
-    {
-        $result = [];
-        foreach ($this->items as $item) {
-            $result[$item[$k]] = $item[$v];
-        }
-        return ($obj != false) ? new Collection($result) : $result;
-    }
 
-    public function extract($key, $obj = false)
-    {
-        $result = [];
-        foreach ($this->items as $item) {
-            $result[] = $item[$key];
-        }
-        return ($obj != false) ? new Collection($result) : $result;
-    }
 
     public function join($glue)
     {
@@ -136,26 +134,38 @@ class Collection implements ArrayAccess, IteratorAggregate
         return min($this->items);
     }
 
-    public function first()
+    public function first($v = false)
     {
-        return reset($this->items);
-    }
+        if (!isset($v))
+            return reset($this->items);
 
-    public function last()
-    {
-        return end($this->items);
+        return reset($this->items[$v]);
 
     }
 
-    public function length()
+    public function last($v = false)
     {
-        return count($this->items);
+        if (!isset($v))
+            return end($this->items);
+
+        return end($this->items[$v]);
+    }
+
+    /**
+     * total: give the result of keys in this instance
+     * @return array|int
+     */
+    public function total()
+    {
+        if (is_array(reset($this->items)))
+            return count($this->fetchAllKeys($this->items));
+        return (array) count($this->items);
     }
 
     public function orderBy($whatever, $descending = false)
     {
         $options = SORT_REGULAR;
-        $results = $this->extract($whatever);
+        $results = $this->get($whatever);
         if ($descending != true) {
             ksort($results, $options);
         } else {
@@ -255,4 +265,70 @@ class Collection implements ArrayAccess, IteratorAggregate
         return $this->{$val};
     }
 
+}
+
+class objCollection {
+    protected $arr = [];
+    public $methods = []; public $attr = [];
+
+    public function __construct($table = [])
+    {
+        $this->methods = get_class_methods($this);
+        $this->attr = get_class_vars(get_class($this));
+        if (!empty($table)) $this->arr = $table;
+    }
+
+    public function __set($name, $value)
+    {
+        $this->arr[$name] = $value;
+    }
+
+    public function __get($name)
+    {
+        return $this->arr[$name];
+    }
+
+    public function __isset($name)
+    {
+        return isset($this->arr[$name]);
+    }
+
+    public function __unset($name)
+    {
+        if (isset($this->arr[$name])) unset($this->arr[$name]);
+    }
+
+    public function __call($methodname, $args)
+    {
+        $input = preg_split('~[A-Z]~',$methodname);
+        $methodHere = (string) reset($input);
+        $methodKey = (string) end($input);
+        if (method_exists($this, $methodHere))
+            return $this->$methodHere(strtolower($methodKey));
+
+        return false;
+    }
+
+    public function has($key)
+    {
+        return array_key_exists($key, $this->arr);
+    }
+
+    public function all()
+    {
+        return $arr;
+    }
+
+    public function getby($key)
+    {
+        if ($this->has($key))
+            return $this->arr[$key];
+    }
+
+    public function flush($key)
+    {
+        if ($this->has($key))
+            unset($this->arr[$key]);
+        return true;
+    }
 }
