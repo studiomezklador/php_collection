@@ -13,7 +13,8 @@ var_dump($models);
 var_dump($garage->first("roger"));
 //var_dump($garage->listing("marque"));
 
-$test = new objCollection();
+$test = new objCollection($park['roger']);
+var_dump($test);
 var_dump($test->methods);
 var_dump($test->attr);
 die();

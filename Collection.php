@@ -269,19 +269,25 @@ class Collection implements ArrayAccess, IteratorAggregate
 
 class objCollection {
     protected $arr = [];
-    public $methods = []; public $attr = [];
+    public $methods = []; public $attr;
 
     public function __construct($table = [])
     {
         $this->methods = get_class_methods($this);
         $this->attr = get_class_vars(get_class($this));
-        if (!empty($table)) $this->arr = $table;
+        if (!empty($table))
+        {
+            foreach ($table as $k => $v)
+            {
+                $this->$k = $v;
+            }
+        }
     }
 
-    public function __set($name, $value)
+    /*public function __set($name, $value)
     {
         $this->arr[$name] = $value;
-    }
+    }*/
 
     public function __get($name)
     {
