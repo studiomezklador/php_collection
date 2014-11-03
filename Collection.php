@@ -1,116 +1,162 @@
 <?php
 
-class Collection implements ArrayAccess, IteratorAggregate{
+class Collection implements ArrayAccess, IteratorAggregate
+{
 
     private $items = [];
     private $iterator;
 
-    public function __construct($table = []) {
+    public function __construct($table = [])
+    {
         $this->items = $table;
-        if (!empty($table))
-        {
+        if (!empty($table)) {
             //$this->iterator = new RecursiveArrayIterator($table);
         }
     }
 
-    public function _toString(){
+    /**
+     * @return string /// NOT WORKING YET!
+     */
+    public function _toString()
+    {
         return $this->toJson();
     }
 
-    public function get($key) {
-
+    /**
+     * get: get a single / multiple key(s) from this instance, even if it's multiple array.
+     * @param $key : single or multiple array
+     * @return array|bool
+     */
+    public function get($key)
+    {
         if (is_array(reset($this->items))) // Multi arrays
         {
-            return array_column($this->items, $key);
+            if ($this->has($key)) // using internal method has()
+                return array_column($this->items, $key);
         }
 
-        if($this->has($key)) { // Single associative array
+        if ($this->has($key)) // Single associative array [same usage of has()]
+        {
             return $this->items[$key];
         }
 
         return false; // nothing at all
-
     }
 
-    public function set($key, $value = null) {
+    /**
+     * set: insert a key inside this instance /// Nothing setup for multiple array, YET!
+     * @param $key : the KEY to set in the array
+     * @param null $value : the VALUE to inject
+     */
+    public function set($key, $value = null)
+    {
         $this->items[$key] = $value;
     }
 
-    public function allKeys() {
+    /**
+     * allKeys: method to get all the keys inside a single / multiple Array.
+     * @return array
+     */
+    public function getAllKeys()
+    {
         if (is_array($this->items))
             return $this->fetchAllKeys($this->items);
         return array_keys($this->items);
     }
 
-    public function fetchAllKeys(array $array) {
+    /**
+     * fetchAllKeys: special method for multiple array, with recursion (called in getAllKeys).
+     * @param array $array
+     * @return array
+     */
+    public function fetchAllKeys(array $array)
+    {
         $keys = [];
-        foreach ($array as $k => $v)
-        {
+        foreach ($array as $k => $v) {
             $keys[] = $k;
-            if (is_array($v)){
-                $keys = array_merge($keys, $this->fetchAllKeys($v));
+            if (is_array($v)) {
+                $keys = array_merge($keys, $this->fetchAllKeys($v)); // See? Here's the recursion.
             }
         }
         return $keys;
     }
 
-    public function has($key, $offset = false){
+    /**
+     * has: just checking if a key exists inside this instance.
+     * @param $key
+     * @param bool $offset
+     * @return bool
+     */
+    public function has($key, $offset = false)
+    {
         $lookup = ($offset != false) ? $offset : $this->items;
+
+        if (is_array(reset($this->items)))
+            return in_array($key, $this->getAllKeys(), true);
+
         return array_key_exists($key, $lookup);
     }
 
-    public function listing($k , $v, $obj = false){
+    public function listing($k, $v, $obj = false)
+    {
         $result = [];
-        foreach($this->items as $item){
+        foreach ($this->items as $item) {
             $result[$item[$k]] = $item[$v];
         }
         return ($obj != false) ? new Collection($result) : $result;
     }
 
-    public function extract($key, $obj = false){
+    public function extract($key, $obj = false)
+    {
         $result = [];
-        foreach($this->items as $item){
+        foreach ($this->items as $item) {
             $result[] = $item[$key];
         }
         return ($obj != false) ? new Collection($result) : $result;
     }
 
-    public function join($glue){
+    public function join($glue)
+    {
         return implode($glue, $this->items);
     }
 
-    public function max($k = false){
-        if($k){
+    public function max($k = false)
+    {
+        if ($k) {
             return $this->extract($k, true)->max();
         }
         return max($this->items);
     }
 
-    public function min($k = false){
-        if($k){
+    public function min($k = false)
+    {
+        if ($k) {
             return $this->extract($k)->max();
         }
         return min($this->items);
     }
 
-    public function first() {
+    public function first()
+    {
         return reset($this->items);
     }
 
-    public function last(){
+    public function last()
+    {
         return end($this->items);
 
     }
 
-    public function length() {
+    public function length()
+    {
         return count($this->items);
     }
 
-    public function orderBy($whatever, $descending = false){
+    public function orderBy($whatever, $descending = false)
+    {
         $options = SORT_REGULAR;
         $results = $this->extract($whatever);
-        if ($descending != true)
-        {
+        if ($descending != true) {
             ksort($results, $options);
         } else {
             krsort($results, $options);
@@ -123,8 +169,9 @@ class Collection implements ArrayAccess, IteratorAggregate{
         return json_encode($this->toArray(), $options);
     }
 
-    public function toArray(){
-        return array_map(function($val){
+    public function toArray()
+    {
+        return array_map(function ($val) {
             return $val;
         }, $this->items);
     }
@@ -203,7 +250,8 @@ class Collection implements ArrayAccess, IteratorAggregate{
         return new ArrayIterator($this->items);
     }
 
-    public function display($val){
+    public function display($val)
+    {
         return $this->{$val};
     }
 
