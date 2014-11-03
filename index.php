@@ -2,11 +2,16 @@
 <?php require 'RecursiveIt.php'; ?>
 <?php
 $park = [
-   "roger" =>  ["Renault" => "R5", "puissance" => "4 CV", "couleur" => "beige"],
-    "giselle" => ["Peugeot" => "205", "puissance" => "5 CV", "couleur" => "rouge"],
-    "charles" => ["Citröen" => "DS", "puissance" => "6 CV", "couleur" => "noire"]
+   "roger" =>  ["marque" => "Renault", "modele" => "R5", "puissance" => "4 CV", "couleur" => "beige"],
+    "giselle" => ["marque" => "Peugeot", "modele" => "205", "puissance" => "5 CV", "couleur" => "rouge"],
+    "charles" => ["marque" => "Citröen", "modele" => "DS", "puissance" => "6 CV", "couleur" => "noire"]
 ];
 $garage = new Collection($park);
+$models = $garage->get("modele");
+
+var_dump($models);
+var_dump($garage->allKeys());
+die();
 //$garage = new RecursiveIt($park);
 //
 //foreach($garage as $it_k => $it_v)

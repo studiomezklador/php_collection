@@ -1,5 +1,5 @@
 <?php
-use RecursiveArrayIterator, RecursiveIteratorIterator;
+
 class Collection implements ArrayAccess, IteratorAggregate{
 
     private $items = [];
@@ -9,18 +9,19 @@ class Collection implements ArrayAccess, IteratorAggregate{
         $this->items = $table;
         if (!empty($table))
         {
-            $this->iterator = new RecursiveArrayIterator($table);
+            //$this->iterator = new RecursiveArrayIterator($table);
         }
+    }
+
+    public function _toString(){
+        return $this->toJson();
     }
 
     public function get($key) {
 
-        if (is_array(reset($this->items)) && preg_match('/\./', $key)) // Multi arrays
+        if (is_array(reset($this->items))) // Multi arrays
         {
-            $stroke = explode('.', $key);
-            // $stroke[1] = clé à chercher | $stroke[0] = entrée du tableau à parcourir
-            if ($this->has($stroke[1], $this->items[$stroke[0]])) return $this->getData($stroke, $this->items);
-            // getData -> valeurs (tableau) à chercher , tableau à analyser
+            return array_column($this->items, $key);
         }
 
         if($this->has($key)) { // Single associative array
@@ -31,41 +32,12 @@ class Collection implements ArrayAccess, IteratorAggregate{
 
     }
 
-    public function getData(array $id, $tab){
-        $needle = array_shift($id);
-
-        if(empty($id)) return isset($tab[$needle]) ? $tab[$needle] : 'Rien trouvé!';
-        return $this->getData($id, $tab[$needle]);
-    }
-
-    public function digData($pk = null , $sk) //$pk = primary key | $sk = search key
-    {
-        $t = new RecursiveIteratorIterator($this->iterator);
-
-        $children = iterator_to_array($t);
-        var_dump((array) $this->iterator, iterator_to_array($t), $children); die();
-        if (!$pk)
-        {
-            $ind = 0;
-            $fr = [];
-            while ($ind <= count($children))
-            {
-                if (in_array($sk, $children))
-                {
-                    $fr[] = $children[$sk];
-                }
-            }
-            return $fr;
-        }
-        if (in_array($pk, $children))
-        {
-            return $children[$sk];
-        }
-        return false;
-    }
-
     public function set($key, $value = null) {
         $this->items[$key] = $value;
+    }
+
+    public function allKeys() {
+        return array_keys($this->items);
     }
 
     public function has($key, $offset = false){
@@ -221,7 +193,4 @@ class Collection implements ArrayAccess, IteratorAggregate{
         return $this->{$val};
     }
 
-    public function _toString(){
-        return $this->toJson();
-    }
 }
