@@ -37,7 +37,21 @@ class Collection implements ArrayAccess, IteratorAggregate{
     }
 
     public function allKeys() {
+        if (is_array($this->items))
+            return $this->fetchAllKeys($this->items);
         return array_keys($this->items);
+    }
+
+    public function fetchAllKeys(array $array) {
+        $keys = [];
+        foreach ($array as $k => $v)
+        {
+            $keys[] = $k;
+            if (is_array($v)){
+                $keys = array_merge($keys, $this->fetchAllKeys($v));
+            }
+        }
+        return $keys;
     }
 
     public function has($key, $offset = false){
